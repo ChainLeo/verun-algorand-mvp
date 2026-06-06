@@ -69,7 +69,10 @@ a{color:var(--teal);text-decoration:none}
 @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.4;transform:scale(1.5)}}
 
 /* HERO */
-.hero{padding:80px 0 30px;position:relative;overflow:visible;background:linear-gradient(180deg,#dcfce7 0%,#ecfdf5 38%,#ffffff 78%)}
+.hero{padding:80px 0 30px;position:relative;overflow:visible;background:#ffffff}
+/* Solid green block ONLY behind the phone — phone bottom extends into white below */
+.hero-phone-wrap{isolation:isolate}
+.hero-phone-wrap::before{content:'';position:absolute;top:-40px;left:-60px;right:-60px;height:78%;background:linear-gradient(135deg,#22c55e 0%,#16a34a 100%);border-radius:32px;z-index:-1;box-shadow:0 30px 60px -25px rgba(22,163,74,0.35)}
 .hero-inner{position:relative;display:grid;grid-template-columns:0.95fr 1.05fr;grid-template-areas:"phone copy";align-items:start;gap:0;padding-bottom:0}
 .hero-copy{text-align:left;padding-bottom:0;align-self:center;grid-area:copy}
 .hero h1{font-size:clamp(40px,4.5vw,60px);font-weight:800;line-height:1.04;color:var(--text);margin-bottom:24px;letter-spacing:-0.03em}

@@ -459,6 +459,13 @@ footer .footer-inner > div:first-child > div:last-child{color:#64748b !important
   .footer-links{flex-wrap:wrap;gap:14px 18px}
   .reg-anchor-grid{grid-template-columns:1fr !important}
   .platform-grid{grid-template-columns:1fr}
+  .x402-grid{grid-template-columns:1fr !important;gap:20px !important}
+  .hero-phone-wrap{margin-bottom:-40px !important}
+}
+/* Tablet — 2-column x402 grid + fact cards stack */
+@media(min-width:641px) and (max-width:1024px){
+  .x402-grid{grid-template-columns:1fr !important;gap:24px !important}
+  .hero-phone-wrap{margin-bottom:-80px !important}
 }
 /* Tablet 2-col grid for validator + regulatory cards */
 @media(min-width:601px) and (max-width:900px){
@@ -959,7 +966,7 @@ footer .footer-inner > div:first-child > div:last-child{color:#64748b !important
             for native yield.
           </div>
         </div>
-        <div style="margin-top:16px;padding:14px 18px;background:#fff;border-left:3px solid var(--teal-bright);border-radius:8px;font-size:13px;color:var(--text2);line-height:1.6">
+        <div style="margin-top:16px;padding:14px 18px;background:#fff;border:1px solid var(--border);border-radius:8px;font-size:13px;color:var(--text2);line-height:1.6">
           <strong style="color:var(--text)">Spec-compliant:</strong> follows <code style="font-family:var(--mono);font-size:12px;background:#f1f5f9;padding:1px 6px;border-radius:4px">x402Version: 1</code>,
           <code style="font-family:var(--mono);font-size:12px;background:#f1f5f9;padding:1px 6px;border-radius:4px">scheme: exact</code>,
           CAIP-2 network IDs, atomic transaction groups.

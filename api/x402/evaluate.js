@@ -46,7 +46,7 @@ module.exports = async function handler(req, res) {
 
   // ── GET (preview) or POST without X-PAYMENT → 402 ──────────────────
   if (!xPaymentHeader) {
-    res.setHeader('X-402-Powered', `${FACILITATOR_URL} · USDC`);
+    res.setHeader('X-402-Powered', `${FACILITATOR_URL} - USDC`);
     return res.status(402).json(paymentRequirements);
   }
 

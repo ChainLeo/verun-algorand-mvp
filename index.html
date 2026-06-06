@@ -635,10 +635,15 @@ footer .footer-inner > div:first-child > div:last-child{color:#64748b !important
     <div class="nav-logo" style="letter-spacing:0.12em">ERSTER</div>
     <div class="nav-links">
       <a href="javascript:void(0)" onclick="scrollToDemo()">Demo</a>
-      <a href="#platforms">Platforms</a>
+      <a href="#x402">x402</a>
+      <a href="#platforms">Validators</a>
       <a href="/docs.html" target="_blank">Tech Docs</a>
     </div>
-    <div class="nav-right">
+    <div class="nav-right" style="display:flex;align-items:center;gap:10px">
+      <div class="algo-badge" style="background:#ede9fe;color:#5b21b6">
+        <span class="algo-dot" style="background:#7c3aed"></span>
+        x402 Powered
+      </div>
       <div class="algo-badge">
         <span class="algo-dot"></span>
         Algorand Testnet
@@ -928,6 +933,90 @@ print('  → Click the Lora Explorer link to see the live transaction.')
   </div>
 </section>
 
+<!-- x402 COMMERCE SECTION -->
+<section class="section" id="x402" style="background:linear-gradient(180deg,#faf5ff 0%,#f3f4ff 100%);padding:80px 0;border-top:1px solid var(--border)">
+  <div class="container">
+    <div style="text-align:center;margin-bottom:16px">
+      <span class="pill pill-purple" style="font-family:var(--mono);font-size:11px;letter-spacing:0.08em;padding:6px 14px">
+        x402 · ALGORAND · GOPLAUSIBLE FACILITATOR
+      </span>
+    </div>
+    <h2 class="section-h2" style="text-align:center;margin-bottom:14px">
+      Pay-per-evaluation. <span class="muted">Agent-native commerce.</span>
+    </h2>
+    <p class="section-sub" style="text-align:center;max-width:680px;margin:0 auto 40px;font-size:17px;color:var(--text2)">
+      An agent pays <strong>0.01 USDC</strong> via x402 → gets a Verun trust verdict
+      + on-chain anchor in one round trip. No subscriptions, no API keys, no billing accounts.
+    </p>
+
+    <div style="display:grid;grid-template-columns:1.1fr 0.9fr;gap:32px;max-width:1080px;margin:0 auto;align-items:start" class="x402-grid">
+      <!-- LEFT: code / curl example -->
+      <div style="background:#0a2540;color:#cbd5e1;border-radius:14px;padding:0;overflow:hidden;box-shadow:var(--shadow-lg);font-family:var(--mono)">
+        <div style="background:#1e293b;padding:10px 14px;display:flex;align-items:center;gap:8px;border-bottom:1px solid #334155">
+          <span style="width:10px;height:10px;border-radius:50%;background:#ff5f57"></span>
+          <span style="width:10px;height:10px;border-radius:50%;background:#febc2e"></span>
+          <span style="width:10px;height:10px;border-radius:50%;background:#28c840"></span>
+          <span style="font-size:11px;color:#94a3b8;margin-left:8px">agent · x402 client</span>
+          <span style="margin-left:auto;font-size:10px;color:#7c3aed;font-weight:700;letter-spacing:0.08em">PAYS 0.01 USDC</span>
+        </div>
+        <pre style="margin:0;padding:18px 20px;font-size:12px;line-height:1.7;color:#e2e8f0;white-space:pre-wrap;word-break:break-word"># 1. agent requests evaluation
+<span style="color:#a78bfa">curl</span> -X POST https://algorand.erster.fund<span style="color:#fbbf24">/api/x402/evaluate</span>
+
+<span style="color:#94a3b8"># → HTTP 402 Payment Required</span>
+<span style="color:#94a3b8"># → paymentRequirements (USDC | EURD | EUR)</span>
+
+# 2. agent signs PaymentTxn + retries
+<span style="color:#a78bfa">curl</span> -X POST https://algorand.erster.fund/api/x402/evaluate \
+  -H <span style="color:#34d399">"X-PAYMENT: $(SIGNED_TXN_BASE64)"</span> \
+  -H <span style="color:#34d399">"Content-Type: application/json"</span> \
+  -d <span style="color:#fbbf24">'{"agentId":"agt_demo","score":820,"operation":"transfer"}'</span>
+
+<span style="color:#94a3b8"># → 200 OK</span>
+<span style="color:#94a3b8"># → verdict + Algorand anchor txid + settlement txid</span></pre>
+      </div>
+      <!-- RIGHT: payment options + facts -->
+      <div>
+        <div style="background:#fff;border:1px solid var(--border);border-radius:14px;padding:24px;box-shadow:var(--shadow-sm)">
+          <div style="font-size:11px;color:var(--text3);font-family:var(--mono);letter-spacing:0.08em;margin-bottom:14px">ACCEPTED PAYMENT SCHEMES</div>
+          <div style="display:flex;flex-direction:column;gap:10px">
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:#f8fafc;border-radius:8px;border:1px solid var(--border)">
+              <div>
+                <div style="font-weight:700;font-size:14px">USDC <span style="font-size:11px;font-weight:500;color:var(--text2);margin-left:6px">via GoPlausible</span></div>
+                <div style="font-size:11px;color:var(--text3);margin-top:2px;font-family:var(--mono)">algorand · ASA 10458941</div>
+              </div>
+              <div style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--teal)">0.01</div>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:#f8fafc;border-radius:8px;border:1px solid var(--border)">
+              <div>
+                <div style="font-weight:700;font-size:14px">EURD <span style="font-size:11px;font-weight:500;color:var(--text2);margin-left:6px">via Quantoz bridge</span></div>
+                <div style="font-size:11px;color:var(--text3);margin-top:2px;font-family:var(--mono)">algorand mainnet · EUR-pegged</div>
+              </div>
+              <div style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--teal)">0.01</div>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:#f8fafc;border-radius:8px;border:1px solid var(--border)">
+              <div>
+                <div style="font-weight:700;font-size:14px">EUR <span style="font-size:11px;font-weight:500;color:var(--text2);margin-left:6px">via Quantoz managed</span></div>
+                <div style="font-size:11px;color:var(--text3);margin-top:2px;font-family:var(--mono)">off-chain · instant</div>
+              </div>
+              <div style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--teal)">0.01</div>
+            </div>
+          </div>
+          <div style="margin-top:18px;padding-top:18px;border-top:1px solid var(--border);font-size:12px;color:var(--text2);line-height:1.55">
+            <strong style="color:var(--text)">Fee routing:</strong> protocol-side USDC fees auto-sweep into
+            <a href="https://docs.folks.finance/functionalities/xalgo-liquid-staking" target="_blank" style="color:var(--purple);font-weight:600">Folks Finance xALGO</a>
+            for native yield.
+          </div>
+        </div>
+        <div style="margin-top:16px;padding:14px 18px;background:#fff;border-left:3px solid var(--teal-bright);border-radius:8px;font-size:13px;color:var(--text2);line-height:1.6">
+          <strong style="color:var(--text)">Spec-compliant:</strong> follows <code style="font-family:var(--mono);font-size:12px;background:#f1f5f9;padding:1px 6px;border-radius:4px">x402Version: 1</code>,
+          <code style="font-family:var(--mono);font-size:12px;background:#f1f5f9;padding:1px 6px;border-radius:4px">scheme: exact</code>,
+          CAIP-2 network IDs, atomic transaction groups.
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
 <!-- PLATFORM REGISTRY -->
 <section class="section platform-section" id="platforms">
   <div class="container">
@@ -964,12 +1053,13 @@ print('  → Click the Lora Explorer link to see the live transaction.')
       </div>
       <div class="footer-links">
         <a href="javascript:void(0)" onclick="scrollToDemo()">Demo</a>
-        <a href="#platforms">Platforms</a>
+        <a href="#x402">x402</a>
+        <a href="#platforms">Validators</a>
         <a href="https://github.com/ChainLeo/verun-algorand-mvp" target="_blank">GitHub</a>
         <a href="/docs.html" target="_blank">Tech Docs</a>
         <a href="https://www.bcpp.io/contact-us" target="_blank">Contact</a>
       </div>
-      <div class="footer-note">Algorand Testnet · v0.1.0</div>
+      <div class="footer-note">Algorand Testnet · x402 · v0.1.0</div>
     </div>
   </div>
 </footer>

@@ -28,13 +28,33 @@ tokenforge Chain API — operation gate (read 300+, transfer/mint 500+, order 60
 
 | Method | Path | Purpose |
 |---|---|---|
-| GET  | `/api/health`         | Service status + network |
-| GET  | `/api/validators`     | List registered validators |
-| GET  | `/api/funding-status` | Protocol wallet balance |
-| GET  | `/api/config-check`   | Env + mnemonic + algod diagnostics |
-| POST | `/api/score`          | Evaluate agent (no anchor) |
-| POST | `/api/evaluate`       | Evaluate + Algorand on-chain anchor |
-| POST | `/api/mint-sbt`       | Mint Verun SBT (ASA + defaultFrozen + clawback) |
+| GET  | `/api/health`             | Service status + network |
+| GET  | `/api/validators`         | List registered validators |
+| GET  | `/api/funding-status`     | Protocol wallet balance |
+| GET  | `/api/config-check`       | Env + mnemonic + algod diagnostics |
+| GET  | `/api/treasury`           | ALGO + xALGO position (Folks Finance) |
+| POST | `/api/score`              | Evaluate agent (no anchor) |
+| POST | `/api/evaluate`           | Evaluate + Algorand on-chain anchor |
+| POST | `/api/mint-sbt`           | Mint Verun SBT (ASA + defaultFrozen + clawback) |
+| POST | `/api/x402/evaluate`      | **x402 pay-per-evaluation** (USDC / EURD / EUR) |
+
+## x402 — Agentic Commerce on Algorand
+
+The `/api/x402/evaluate` endpoint follows the
+[x402 spec](https://docs.x402.org) for autonomous agent payments:
+
+1. First call → returns **HTTP 402** with `paymentRequirements`
+2. Agent signs a PaymentTxn group and retries with `X-PAYMENT` header
+3. **GoPlausible facilitator** verifies + settles on Algorand
+4. Verun runs 2-of-3 validator consensus + Note-Tx anchor
+5. Response contains `{ verdict, anchor, settlement }`
+
+Three payment schemes are advertised: **USDC** (Algorand testnet, via
+GoPlausible), **EURD** (Algorand mainnet, via Quantoz bridge), and
+**EUR** (Quantoz managed-account off-chain). Protocol fees route to
+**Folks Finance xALGO** for yield.
+
+For the full hackathon submission breakdown, see [HACKATHON.md](./HACKATHON.md).
 
 ### Example
 

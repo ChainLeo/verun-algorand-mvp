@@ -2,7 +2,7 @@
   "name": "verun-algorand-mvp",
   "version": "0.1.0",
   "private": true,
-  "description": "Verun Protocol on Algorand Testnet — agentic trust layer by Erster (3 validators, 2-of-3 consensus, on-chain anchoring).",
+  "description": "Verun Protocol on Algorand Testnet — agentic trust layer by Erster. x402 + GoPlausible facilitator for pay-per-evaluation agent commerce. 3 validators, 2-of-3 consensus, on-chain anchoring.",
   "main": "src/api.js",
   "scripts": {
     "check": "node scripts/check.js",

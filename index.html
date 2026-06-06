@@ -69,28 +69,17 @@ a{color:var(--teal);text-decoration:none}
 @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.4;transform:scale(1.5)}}
 
 /* HERO */
-/* Full-width solid green hero (Stellar-style) — phone extends BELOW into white via negative margin */
-.hero{padding:80px 0 0;position:relative;overflow:visible;background:linear-gradient(#22c55e 0%,#16a34a 100%)}
-.hero h1{color:#ffffff}
-.hero h1 .hl{color:#ffffff}
-.hero h1 .muted{color:rgba(255,255,255,0.55);font-weight:600}
-.hero-sub{color:rgba(255,255,255,0.92)}
-.hero-sub strong{color:#ffffff;font-weight:700}
-.hero-flag{filter:drop-shadow(0 4px 14px rgba(0,0,0,0.18))}
-/* Buttons inverted on green */
-.hero .btn-teal{background:#ffffff;color:#16a34a;box-shadow:0 6px 24px rgba(0,0,0,0.12)}
-.hero .btn-teal:hover{background:#f1fdf5;color:#15803d;box-shadow:0 8px 28px rgba(0,0,0,0.18)}
-.hero .btn-outline{background:transparent;color:#ffffff;border:1px solid rgba(255,255,255,0.5)}
-.hero .btn-outline:hover{background:rgba(255,255,255,0.1);border-color:#ffffff}
-/* Phone visually anchored in green, bottom 1/3 spills into next section */
+/* Hero — soft lavender-grey base (var(--bg2)); brand green reserved for ERSTER finale section */
+.hero{padding:80px 0 0;position:relative;overflow:visible;background:var(--bg2)}
+/* Phone overflows into next white section for visual depth */
 .hero-phone-wrap{margin-bottom:-160px}
 .hero-inner{position:relative;display:grid;grid-template-columns:0.95fr 1.05fr;grid-template-areas:"phone copy";align-items:start;gap:0;padding-bottom:0}
 .hero-copy{text-align:left;padding-bottom:0;align-self:center;grid-area:copy}
-.hero h1{font-size:clamp(40px,4.5vw,60px);font-weight:800;line-height:1.04;color:#ffffff;margin-bottom:24px;letter-spacing:-0.03em}
-.hero h1 .hl{color:#ffffff}
-.hero h1 .muted{color:rgba(255,255,255,0.55);font-weight:600}
-.hero-sub{font-size:20px;color:rgba(255,255,255,0.92);max-width:520px;margin:8px 0 32px;line-height:1.55;font-weight:400;letter-spacing:-0.004em}
-.hero-sub strong{color:#ffffff;font-weight:700}
+.hero h1{font-size:clamp(40px,4.5vw,60px);font-weight:800;line-height:1.04;color:var(--text);margin-bottom:24px;letter-spacing:-0.03em}
+.hero h1 .hl{color:var(--text)}
+.hero h1 .muted{color:#8898aa;font-weight:600}
+.hero-sub{font-size:20px;color:var(--text2);max-width:540px;margin:8px 0 32px;line-height:1.55;font-weight:400;letter-spacing:-0.004em}
+.hero-sub strong{color:inherit;font-weight:700}
 .hero-btns{display:flex;justify-content:flex-start;gap:12px;flex-wrap:wrap;margin-bottom:0;margin-top:24px}
 .hero-flags{display:flex;justify-content:flex-start;gap:14px;flex-wrap:wrap;align-items:center;margin:0 0 8px}
 .hero-flag{display:block;width:96px;height:auto;filter:drop-shadow(0 3px 10px rgba(0,51,153,0.20))}
@@ -106,7 +95,7 @@ a{color:var(--teal);text-decoration:none}
 .pill-amber{background:var(--amber-dim);color:var(--amber);border-color:rgba(217,119,6,0.25)}
 
 /* HERO PHONE — iPhone 15 Pro style mockup showing live demo content (overflows into white section) */
-.hero-phone-wrap{display:flex;justify-content:center;align-items:flex-start;padding:0;position:relative;margin-bottom:-20px;z-index:5;grid-area:phone}
+.hero-phone-wrap{display:flex;justify-content:center;align-items:flex-start;padding:0;position:relative;margin-bottom:-160px;z-index:5;grid-area:phone}
 .hero-phone{
   width:340px;height:680px;
   background:#0a2540;
@@ -146,7 +135,7 @@ a{color:var(--teal);text-decoration:none}
 .hp-tick{width:14px;height:14px;border-radius:50%;background:var(--teal);color:#fff;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:800;flex-shrink:0;margin-top:1px}
 
 /* Ensure the next section after the hero has breathing room for the phone overflow */
-.market-section{background:#fff;padding-top:0;padding-bottom:60px}
+.market-section{background:#fff;padding-top:120px;padding-bottom:60px}
 .market-label{display:inline-block;font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:#8898aa;padding:5px 12px;border-radius:20px;border:1px solid #e5ebf7;background:#f8f9fe;margin-bottom:32px}
 .market-divider{height:1px;background:var(--border);margin-bottom:48px;width:90%}
 .market-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:28px}

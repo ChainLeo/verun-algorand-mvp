@@ -909,127 +909,79 @@ footer .footer-inner > div:first-child > div:last-child{color:#64748b !important
       all before the agent moves on.
     </p>
 
-    <!-- ARCH DIAGRAM -->
-    <div style="max-width:1080px;margin:0 auto">
+    <!-- HORIZONTAL HIGH-LEVEL FLOW (docs-style) -->
+    <div style="max-width:1100px;margin:0 auto">
       <style>
-        .arch-row{display:flex;align-items:stretch;gap:14px;margin-bottom:14px;flex-wrap:wrap}
-        .arch-card{background:#fff;border:1px solid var(--border);border-radius:14px;padding:18px 20px;flex:1;min-width:180px;position:relative;box-shadow:var(--shadow-sm);transition:all .2s}
-        .arch-card:hover{transform:translateY(-2px);box-shadow:var(--shadow-md)}
-        .arch-num{position:absolute;top:-10px;left:18px;background:#0a2540;color:#fff;font-family:var(--mono);font-size:10px;font-weight:700;padding:3px 10px;border-radius:20px;letter-spacing:0.06em}
-        .arch-label{font-family:var(--mono);font-size:10px;color:var(--text3);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:8px}
-        .arch-title{font-weight:800;font-size:16px;color:var(--text);letter-spacing:-0.005em;margin-bottom:4px}
-        .arch-desc{font-size:12px;color:var(--text2);line-height:1.5}
-        .arch-meta{margin-top:10px;padding-top:10px;border-top:1px dashed var(--border);font-family:var(--mono);font-size:10px;color:var(--text3);letter-spacing:0.04em}
-        .arch-arrow-down{display:flex;justify-content:center;color:var(--text3);font-size:24px;line-height:1;margin:4px 0}
-        .arch-card-agent{background:linear-gradient(135deg,#dcfce7 0%,#ecfdf5 100%);border-color:var(--teal-border)}
-        .arch-card-erster{background:#fff;border:2px solid #0a2540}
-        .arch-card-x402{background:linear-gradient(135deg,#ede9fe 0%,#f5f3ff 100%);border-color:#c4b5fd}
-        .arch-card-validator{background:#fff;border-color:var(--border)}
-        .arch-card-validator.gold{background:linear-gradient(135deg,#fef3e0 0%,#fef9ef 100%);border-color:#fbbf24}
-        .arch-card-chain{background:linear-gradient(135deg,#eff6ff 0%,#f0f9ff 100%);border-color:#bfdbfe}
-        .arch-card-treasury{background:linear-gradient(135deg,#fefce8 0%,#fefce8 100%);border-color:#fde68a}
-        @media (max-width:760px){.arch-row{flex-direction:column}}
+        .flow-box{border:1px solid var(--border);border-radius:10px;padding:0;background:#fff;font-family:var(--mono);box-shadow:var(--shadow-sm);overflow:hidden}
+        .flow-row{display:flex;align-items:stretch;gap:0;flex-wrap:nowrap;padding:30px 24px;overflow-x:auto;min-height:128px}
+        .flow-step{text-align:center;flex:1;min-width:130px;display:flex;flex-direction:column;align-items:center;justify-content:center}
+        .flow-tag{border-radius:8px;padding:11px 14px;font-weight:700;font-size:13px;line-height:1.25;width:100%;letter-spacing:-0.005em}
+        .flow-tag .sub{display:block;font-size:10px;opacity:0.7;font-weight:500;margin-top:3px;font-family:var(--mono);letter-spacing:0.02em}
+        .flow-label{font-size:10px;color:var(--text3);margin-top:8px;letter-spacing:0.06em;text-transform:uppercase;font-weight:600}
+        .flow-arrow{display:flex;align-items:center;justify-content:center;padding:0 4px;color:var(--text3);font-size:22px;flex-shrink:0;font-family:var(--sans)}
+        .flow-tag.green{background:#dcfce7;border:1px solid var(--teal-border);color:#065f46}
+        .flow-tag.purple{background:#ede9fe;border:1px solid #c4b5fd;color:#5b21b6}
+        .flow-tag.amber{background:#fef3e0;border:1px solid #fbbf24;color:#92400e}
+        .flow-tag.blue{background:#eff6ff;border:1px solid #bfdbfe;color:#1e40af}
+        .flow-tag.yellow{background:#fefce8;border:1px solid #fde68a;color:#a16207}
+        @media (max-width:760px){
+          .flow-row{flex-wrap:wrap;justify-content:center}
+          .flow-step{min-width:42%}
+          .flow-arrow{display:none}
+        }
       </style>
 
-      <!-- Row 1: Agent -->
-      <div class="arch-row">
-        <div class="arch-card arch-card-agent" style="text-align:center">
-          <div class="arch-num">01 · CALLER</div>
-          <div style="font-size:32px;margin:4px 0">🤖</div>
-          <div class="arch-title">AI Agent</div>
-          <div class="arch-desc">Claude · GPT · MCP · any HTTP-capable agent</div>
-          <div class="arch-meta">POST /api/x402/evaluate</div>
-        </div>
-      </div>
-      <div class="arch-arrow-down">↓</div>
-
-      <!-- Row 2: ERSTER endpoint -->
-      <div class="arch-row">
-        <div class="arch-card arch-card-erster" style="text-align:center">
-          <div class="arch-num" style="background:#7c3aed">02 · CHALLENGE</div>
-          <div style="font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:0.12em;color:#0a2540;margin:6px 0">ERSTER · algorand.erster.fund</div>
-          <div class="arch-title" style="color:#7c3aed">HTTP 402 · paymentRequirements</div>
-          <div class="arch-desc">Returns 3 accepted schemes — USDC (Algorand), EURD (Quantoz bridge), EUR (Quantoz off-chain). Spec: x402Version 1, scheme exact, CAIP-2.</div>
-          <div class="arch-meta">0.01 USDC · ASA 10458941</div>
-        </div>
-      </div>
-      <div class="arch-arrow-down">↓ <span style="font-family:var(--mono);font-size:11px;color:var(--text3);margin-left:6px">agent signs PaymentTxn · X-PAYMENT header</span></div>
-
-      <!-- Row 3: Facilitator -->
-      <div class="arch-row">
-        <div class="arch-card arch-card-x402" style="text-align:center">
-          <div class="arch-num" style="background:#7c3aed">03 · FACILITATOR</div>
-          <div style="font-size:24px;margin:4px 0">⚡</div>
-          <div class="arch-title">GoPlausible</div>
-          <div class="arch-desc">x402 payment processor. /verify validates the signed atomic group, /settle broadcasts the USDC transfer on Algorand Testnet — gas paid by facilitator.</div>
-          <div class="arch-meta">facilitator.goplausible.xyz</div>
-        </div>
-      </div>
-      <div class="arch-arrow-down">↓ <span style="font-family:var(--mono);font-size:11px;color:var(--text3);margin-left:6px">on payment verified → run consensus</span></div>
-
-      <!-- Row 4: 3 Validators -->
-      <div class="arch-row">
-        <div class="arch-card arch-card-validator gold">
-          <div class="arch-num" style="background:#d97706">04a · VALIDATOR</div>
-          <div class="arch-label" style="margin-top:8px">FOUNDING · score-based</div>
-          <div class="arch-title">ERSTER</div>
-          <div class="arch-desc">EU tokenization platform · operated by BCP Partners GmbH, Berlin. Enforces score tiers + operation gates.</div>
-          <div class="arch-meta">val-erster-01 · weight 1</div>
-        </div>
-        <div class="arch-card arch-card-validator gold">
-          <div class="arch-num" style="background:#d97706">04b · VALIDATOR</div>
-          <div class="arch-label" style="margin-top:8px">FOUNDING · chain-api</div>
-          <div class="arch-title">tokenforge</div>
-          <div class="arch-desc">eWpG-compliant Security Token platform. Chain API gates: 300+ read, 500+ transfer/mint, 600+ order.</div>
-          <div class="arch-meta">val-tokenforge-02 · weight 1</div>
-        </div>
-        <div class="arch-card arch-card-validator">
-          <div class="arch-num">04c · VALIDATOR</div>
-          <div class="arch-label" style="margin-top:8px">TESTNET · score-based</div>
-          <div class="arch-title">Test Validator</div>
-          <div class="arch-desc">Third slot for 2-of-3 consensus. Production slot reserved for licensed EU institutional partners.</div>
-          <div class="arch-meta">val-test-03 · weight 1</div>
-        </div>
-      </div>
-      <div class="arch-arrow-down">↓ <span style="font-family:var(--mono);font-size:11px;color:var(--text3);margin-left:6px">≥2-of-3 matching votes → consensus locked</span></div>
-
-      <!-- Row 5: Anchor -->
-      <div class="arch-row">
-        <div class="arch-card arch-card-chain" style="text-align:center">
-          <div class="arch-num" style="background:#1e40af">05 · ANCHOR</div>
-          <div style="font-size:24px;margin:4px 0">⛓️</div>
-          <div class="arch-title" style="color:#1e40af">Algorand Note-Tx</div>
-          <div class="arch-desc">Verdict payload (agentId, score, consensus, validators, timestamp) written to Algorand Testnet as a Note-field transaction. Non-blocking: returns verdict even if anchor fails.</div>
-          <div class="arch-meta">~3.9s finality · 0.001 ALGO fee</div>
-        </div>
-      </div>
-      <div class="arch-arrow-down">↓</div>
-
-      <!-- Row 6: Verification + Treasury (parallel) -->
-      <div class="arch-row">
-        <div class="arch-card arch-card-chain">
-          <div class="arch-num" style="background:#1e40af">06a · VERIFY</div>
-          <div class="arch-label" style="margin-top:8px">PUBLIC EXPLORER</div>
-          <div class="arch-title">Lora Explorer</div>
-          <div class="arch-desc">Anyone (agent, regulator, auditor) can verify the verdict txid + settlement txid on lora.algokit.io. Zero-auth, public, immutable.</div>
-          <div class="arch-meta">lora.algokit.io/testnet/tx/{txid}</div>
-        </div>
-        <div class="arch-card arch-card-treasury">
-          <div class="arch-num" style="background:#a16207">06b · TREASURY</div>
-          <div class="arch-label" style="margin-top:8px">PROTOCOL YIELD</div>
-          <div class="arch-title">Folks xALGO</div>
-          <div class="arch-desc">Collected x402 fees auto-sweep into Folks Finance xALGO (Algorand liquid staking ASA) for native yield without locking liquidity.</div>
-          <div class="arch-meta">GET /api/treasury · ASA 730430089</div>
+      <div class="flow-box">
+        <div class="flow-row">
+          <div class="flow-step">
+            <div class="flow-tag green">Agent<span class="sub">Claude · MCP</span></div>
+            <div class="flow-label">Caller</div>
+          </div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-step">
+            <div class="flow-tag purple">x402<span class="sub">HTTP 402 · paymentRequirements</span></div>
+            <div class="flow-label">Challenge</div>
+          </div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-step">
+            <div class="flow-tag purple">GoPlausible<span class="sub">verify · settle</span></div>
+            <div class="flow-label">Facilitator</div>
+          </div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-step">
+            <div class="flow-tag amber">Verun<span class="sub">2-of-3 consensus</span></div>
+            <div class="flow-label">Trust Gate</div>
+          </div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-step">
+            <div class="flow-tag blue">Algorand<span class="sub">Note-Tx anchor</span></div>
+            <div class="flow-label">Audit Trail</div>
+          </div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-step">
+            <div class="flow-tag yellow">xALGO<span class="sub">Folks Finance yield</span></div>
+            <div class="flow-label">Treasury</div>
+          </div>
         </div>
       </div>
 
-      <!-- LEGEND -->
-      <div style="margin-top:32px;padding:18px 22px;background:#fff;border:1px solid var(--border);border-radius:12px;display:flex;flex-wrap:wrap;align-items:center;gap:24px;font-size:12px;color:var(--text2);box-shadow:var(--shadow-sm)">
-        <div style="display:flex;align-items:center;gap:8px"><span style="display:inline-block;width:10px;height:10px;border-radius:3px;background:#dcfce7;border:1px solid var(--teal-border)"></span><strong style="color:var(--text)">Caller</strong> — any agent</div>
-        <div style="display:flex;align-items:center;gap:8px"><span style="display:inline-block;width:10px;height:10px;border-radius:3px;background:#ede9fe;border:1px solid #c4b5fd"></span><strong style="color:var(--text)">x402</strong> — payment layer</div>
-        <div style="display:flex;align-items:center;gap:8px"><span style="display:inline-block;width:10px;height:10px;border-radius:3px;background:#fef3e0;border:1px solid #fbbf24"></span><strong style="color:var(--text)">Founding validators</strong></div>
-        <div style="display:flex;align-items:center;gap:8px"><span style="display:inline-block;width:10px;height:10px;border-radius:3px;background:#eff6ff;border:1px solid #bfdbfe"></span><strong style="color:var(--text)">Algorand</strong> — anchor + verify</div>
-        <div style="display:flex;align-items:center;gap:8px"><span style="display:inline-block;width:10px;height:10px;border-radius:3px;background:#fefce8;border:1px solid #fde68a"></span><strong style="color:var(--text)">Folks Finance</strong> — treasury yield</div>
+      <!-- below: 3 quick fact cards -->
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:18px" class="x402-grid">
+        <div style="background:#fff;border:1px solid var(--border);border-radius:10px;padding:16px 18px">
+          <div style="font-family:var(--mono);font-size:10px;color:var(--text3);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:6px">Validators</div>
+          <div style="font-weight:700;font-size:14px;color:var(--text);line-height:1.4">ERSTER · tokenforge · Test</div>
+          <div style="font-size:12px;color:var(--text2);margin-top:4px">2-of-3 institutional consensus, weight-1 each.</div>
+        </div>
+        <div style="background:#fff;border:1px solid var(--border);border-radius:10px;padding:16px 18px">
+          <div style="font-family:var(--mono);font-size:10px;color:var(--text3);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:6px">Settlement</div>
+          <div style="font-weight:700;font-size:14px;color:var(--text);line-height:1.4">USDC · EURD · EUR</div>
+          <div style="font-size:12px;color:var(--text2);margin-top:4px">Three schemes accepted side-by-side via GoPlausible + Quantoz.</div>
+        </div>
+        <div style="background:#fff;border:1px solid var(--border);border-radius:10px;padding:16px 18px">
+          <div style="font-family:var(--mono);font-size:10px;color:var(--text3);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:6px">Verification</div>
+          <div style="font-weight:700;font-size:14px;color:var(--text);line-height:1.4">Lora · Public · Zero-auth</div>
+          <div style="font-size:12px;color:var(--text2);margin-top:4px">Every verdict txid + settlement txid public on Lora.algokit.io.</div>
+        </div>
       </div>
     </div>
   </div>

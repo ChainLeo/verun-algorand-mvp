@@ -48,7 +48,7 @@ printf "[6/7] /api/x402/evaluate      → "
 HTTP_CODE=$(curl -s -o /tmp/verun_x402.json -w "%{http_code}" -X POST "$BASE_URL/api/x402/evaluate")
 echo "HTTP $HTTP_CODE  (expect 402)"
 echo "       Schemes accepted:"
-jq -r '.accepts[] | "         • \(.scheme | ascii_upcase) · \(.asset // "—") · 0.\((.maxAmountRequired | tonumber) / 1000000 * 100 | floor) · network=\(.network | split(":")[0])"' /tmp/verun_x402.json 2>/dev/null || echo "         (unable to parse)"
+jq -r '.accepts[] | "         • \(.scheme | ascii_upcase) · \(.extra.name // .asset // "—") · \((.maxAmountRequired | tonumber) / 1000000) · network=\(.network | split(":")[0])"' /tmp/verun_x402.json 2>/dev/null || echo "         (unable to parse)"
 echo "       Facilitator: $(jq -r '.accepts[0].extra.facilitator // "—"' /tmp/verun_x402.json)"
 echo "       Bonus: $(jq -r '.metadata.bonus_integrations | to_entries | map("\(.key)=\(.value)") | join(" · ")' /tmp/verun_x402.json)"
 

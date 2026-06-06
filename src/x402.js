@@ -14,14 +14,30 @@
  *   7. Returns 200 + verdict + anchor txid + settlement txid
  */
 
+// ── CAIP-2 network IDs ───────────────────────────────────────
 const ALGORAND_MAINNET_CAIP2 = 'algorand:wGHE2Pwdvd7S12BL5FaOP20EGYesN73ktiC1qzkkit8=';
 const ALGORAND_TESTNET_CAIP2 = 'algorand:SGO1GKSzyE7IEPItTxCByw9x8FmnrCDexi9/cOUJOiI=';
+
+// ── USDC (GoPlausible facilitator route) ─────────────────────
 const USDC_TESTNET_ASA_ID = '10458941';
 const USDC_MAINNET_ASA_ID = '31566704';
 const USDC_DECIMALS = 6;
 
-const FACILITATOR_URL = process.env.X402_FACILITATOR_URL || 'https://facilitator.goplausible.xyz';
+// ── Quantoz EURD / EURQ (regulated EU stablecoins) ──────────
+// Per Quantoz hackathon guide — EURD has 2 decimals (NOT 6).
+const EURD_MAINNET_ASA_ID = '1221682136';
+const EURQ_MAINNET_ASA_ID = '2768422954';
+const EURD_DECIMALS = 2;
+
+// ── Facilitators ─────────────────────────────────────────────
+const GOPLAUSIBLE_FACILITATOR = 'https://facilitator.goplausible.xyz';
+const QUANTOZ_X402_FACILITATOR = 'https://x402algo.ai.quantozpay.com';
+const QUANTOZ_PAY_FACILITATOR = 'https://mcp.ai.quantozpay.com';
+
+// ── Resolved config ──────────────────────────────────────────
+const FACILITATOR_URL = process.env.X402_FACILITATOR_URL || GOPLAUSIBLE_FACILITATOR;
 const PRICE_USDC = Number(process.env.X402_PRICE_USDC || '0.01');
+const PRICE_EUR = Number(process.env.X402_PRICE_EUR || '0.01');
 const NETWORK_CAIP2 = process.env.X402_NETWORK === 'mainnet' ? ALGORAND_MAINNET_CAIP2 : ALGORAND_TESTNET_CAIP2;
 const USDC_ASA_ID = process.env.X402_NETWORK === 'mainnet' ? USDC_MAINNET_ASA_ID : USDC_TESTNET_ASA_ID;
 
@@ -33,78 +49,137 @@ function getPayToAddress() {
  * Build x402 paymentRequirements payload (returned with HTTP 402).
  * Spec: https://docs.x402.org
  */
-function buildPaymentRequirements({ resource, description, amountUSDC = PRICE_USDC } = {}) {
+function buildPaymentRequirements({ resource, description, amountUSDC = PRICE_USDC, amountEUR = PRICE_EUR } = {}) {
   const payTo = getPayToAddress();
   if (!payTo) throw new Error('ALGO_TESTNET_ADDR / ALGO_TESTNET_ADDRESS not configured');
 
-  // Convert decimal USDC → integer microUSDC (6 decimals)
-  const microUSDC = Math.round(amountUSDC * Math.pow(10, USDC_DECIMALS)).toString();
-  // EURD shares 6 decimals with USDC; quote roughly at parity for evaluation pricing
-  const microEURD = Math.round(amountUSDC * Math.pow(10, USDC_DECIMALS)).toString();
+  // Convert decimal amounts → smallest unit per asset.
+  // USDC: 6 decimals → 0.01 USDC = 10,000 microUSDC
+  // EURD: 2 decimals → 0.01 EUR  = 1 atomic unit (€0.01 minimum chargeable on this scheme)
+  const microUSDC   = Math.round(amountUSDC * Math.pow(10, USDC_DECIMALS)).toString();
+  const atomicEURD  = Math.max(1, Math.round(amountEUR * Math.pow(10, EURD_DECIMALS))).toString();
+  const atomicEUR   = atomicEURD; // off-chain euro scheme uses same scale as EURD
+
+  const res = resource || '/api/x402/evaluate';
 
   // Verun accepts multiple payment schemes — agents can pay in whichever they prefer.
   const accepts = [
-    // Scheme 1: USDC on Algorand via GoPlausible facilitator
+    // ── Scheme 1: USDC on Algorand · via GoPlausible ────────────
     {
       scheme: 'exact',
       network: NETWORK_CAIP2,
       maxAmountRequired: microUSDC,
-      resource: resource || '/api/x402/evaluate',
+      resource: res,
       description: description || 'Verun Trust Evaluation — agent score + 2-of-3 consensus + Algorand anchor.',
       mimeType: 'application/json',
       payTo,
       maxTimeoutSeconds: 60,
       asset: USDC_ASA_ID,
+      facilitator: GOPLAUSIBLE_FACILITATOR,
       extra: {
         name: 'USDC',
         decimals: USDC_DECIMALS,
-        facilitator: FACILITATOR_URL,
+        facilitator: GOPLAUSIBLE_FACILITATOR,
         protocol: 'verun-erster',
         chain: 'algorand-testnet'
       }
     },
-    // Scheme 2: EURD on Algorand mainnet (Quantoz bridge) — EU stablecoin
+    // ── Scheme 2: EURD direct on Algorand mainnet · via Quantoz x402 facilitator (Path B) ──
     {
       scheme: 'exact',
-      network: ALGORAND_MAINNET_CAIP2,
-      maxAmountRequired: microEURD,
-      resource: resource || '/api/x402/evaluate',
-      description: 'Verun Trust Evaluation (EUR settlement) — Quantoz EURD via Algorand bridge.',
+      network: 'algorand:mainnet', // Quantoz uses friendly form per their guide
+      maxAmountRequired: atomicEURD,
+      resource: res,
+      description: 'Verun Trust Evaluation (EURD settlement on Algorand mainnet) — Quantoz regulated stablecoin.',
       mimeType: 'application/json',
       payTo,
-      maxTimeoutSeconds: 60,
-      asset: 'EURD',
+      maxTimeoutSeconds: 300,
+      asset: EURD_MAINNET_ASA_ID,
+      facilitator: QUANTOZ_X402_FACILITATOR,
       extra: {
         name: 'EURD',
-        decimals: USDC_DECIMALS,
+        decimals: EURD_DECIMALS,
         provider: 'Quantoz',
         provider_docs: 'https://docs.ai.quantozpay.com',
+        path: 'B · EURD direct on-chain',
+        regulation: 'MiCA',
+        whitelisting_required: true,
         protocol: 'verun-erster',
         chain: 'algorand-mainnet'
       }
     },
-    // Scheme 3: Quantoz euro (off-chain instant) — EU bonus track
+    // ── Scheme 3: EURQ alternative on Algorand mainnet (Quantoz) ────────
+    {
+      scheme: 'exact',
+      network: 'algorand:mainnet',
+      maxAmountRequired: atomicEURD,
+      resource: res,
+      description: 'Verun Trust Evaluation (EURQ settlement on Algorand mainnet) — Quantoz regulated stablecoin.',
+      mimeType: 'application/json',
+      payTo,
+      maxTimeoutSeconds: 300,
+      asset: EURQ_MAINNET_ASA_ID,
+      facilitator: QUANTOZ_X402_FACILITATOR,
+      extra: {
+        name: 'EURQ',
+        decimals: EURD_DECIMALS,
+        provider: 'Quantoz',
+        path: 'B · EURQ direct on-chain',
+        regulation: 'MiCA',
+        whitelisting_required: true,
+        protocol: 'verun-erster',
+        chain: 'algorand-mainnet'
+      }
+    },
+    // ── Scheme 4: EURO managed account · Quantoz off-chain (Path A) ────
     {
       scheme: 'euro',
       network: 'quantoz:euro',
-      maxAmountRequired: microEURD,
-      resource: resource || '/api/x402/evaluate',
-      description: 'Verun Trust Evaluation (instant EUR) — Quantoz managed-account euro scheme.',
+      maxAmountRequired: atomicEUR,
+      resource: res,
+      description: 'Verun Trust Evaluation (instant EUR settlement) — Quantoz managed-account, off-chain.',
       mimeType: 'application/json',
       payTo,
       maxTimeoutSeconds: 60,
       asset: 'EUR',
+      facilitator: QUANTOZ_PAY_FACILITATOR,
       extra: {
         name: 'EUR',
-        decimals: USDC_DECIMALS,
+        decimals: EURD_DECIMALS,
         provider: 'Quantoz',
+        path: 'A · EUR off-chain managed account',
+        regulation: 'MiCA',
+        protocol: 'verun-erster'
+      }
+    },
+    // ── Scheme 5: EURO → Algorand bridge · Quantoz (Path C, agent-friendly) ──
+    {
+      scheme: 'exact-bridge',
+      network: 'algorand:mainnet',
+      maxAmountRequired: atomicEURD,
+      resource: res,
+      description: 'Verun Trust Evaluation (EUR pay → EURD settle on Algorand) — Quantoz bridge, no Algorand wallet needed on the agent side.',
+      mimeType: 'application/json',
+      payTo,
+      maxTimeoutSeconds: 300,
+      asset: EURD_MAINNET_ASA_ID,
+      facilitator: QUANTOZ_PAY_FACILITATOR,
+      extra: {
+        name: 'EUR→EURD',
+        decimals: EURD_DECIMALS,
+        provider: 'Quantoz',
+        path: 'C · EURO→Algorand bridge',
+        regulation: 'MiCA',
+        agent_needs: 'Quantoz EUR account only',
+        merchant_needs: 'whitelisted Algorand address',
         protocol: 'verun-erster'
       }
     }
   ];
 
   return {
-    x402Version: 1,
+    x402Version: 1, // GoPlausible USDC path
+    quantoz_x402Version: 2, // Quantoz paths use v2 per their spec
     accepts,
     error: 'Payment required',
     metadata: {
@@ -113,8 +188,24 @@ function buildPaymentRequirements({ resource, description, amountUSDC = PRICE_US
       validators: ['val-erster-01', 'val-tokenforge-02', 'val-test-03'],
       docs: 'https://algorand.erster.fund/docs.html',
       bonus_integrations: {
-        quantoz: 'EURD + Euro schemes accepted',
-        folks_finance: 'protocol fees staked in xALGO for yield'
+        quantoz: {
+          paths: ['A · EUR managed-account', 'B · EURD/EURQ on Algorand', 'C · EUR→Algorand bridge'],
+          facilitators: {
+            x402: QUANTOZ_X402_FACILITATOR,
+            mcp_pay: QUANTOZ_PAY_FACILITATOR
+          },
+          assets: {
+            EURD: { asa_id: EURD_MAINNET_ASA_ID, decimals: EURD_DECIMALS, regulation: 'MiCA' },
+            EURQ: { asa_id: EURQ_MAINNET_ASA_ID, decimals: EURD_DECIMALS, regulation: 'MiCA' }
+          },
+          docs: 'https://docs.ai.quantozpay.com/hackathon/guide/'
+        },
+        folks_finance: {
+          description: 'Protocol fees staked in xALGO for native yield',
+          asa_id: 730430089,
+          docs: 'https://docs.folks.finance/functionalities/xalgo-liquid-staking',
+          treasury_endpoint: '/api/treasury'
+        }
       }
     }
   };
@@ -175,8 +266,17 @@ module.exports = {
   decodePaymentHeader,
   // Constants for downstream use
   FACILITATOR_URL,
+  GOPLAUSIBLE_FACILITATOR,
+  QUANTOZ_X402_FACILITATOR,
+  QUANTOZ_PAY_FACILITATOR,
   PRICE_USDC,
+  PRICE_EUR,
   USDC_ASA_ID,
+  USDC_DECIMALS,
+  EURD_MAINNET_ASA_ID,
+  EURQ_MAINNET_ASA_ID,
+  EURD_DECIMALS,
   NETWORK_CAIP2,
-  USDC_DECIMALS
+  ALGORAND_MAINNET_CAIP2,
+  ALGORAND_TESTNET_CAIP2
 };

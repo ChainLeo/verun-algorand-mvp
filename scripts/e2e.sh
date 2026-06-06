@@ -153,31 +153,45 @@ HTTP_CODE=$(curl -s -o /tmp/verun_x402.json -w "%{http_code}" -X POST "$BASE_URL
 X402V=$(jq -r '.x402Version // 0' /tmp/verun_x402.json)
 [ "$X402V" = "1" ] && ok "x402Version = 1" || bad "x402Version = $X402V"
 
-# D2 — 3 schemes present
+# D2 — schemes present (expect 5: USDC + EURD + EURQ + EURO + EUR-bridge)
 N_ACCEPTS=$(jq '.accepts | length' /tmp/verun_x402.json)
-[ "$N_ACCEPTS" -ge 3 ] && ok "3 payment schemes advertised" || bad "only $N_ACCEPTS scheme(s) advertised"
+[ "$N_ACCEPTS" -ge 5 ] && ok "$N_ACCEPTS payment schemes advertised (expect 5)" || bad "only $N_ACCEPTS scheme(s) advertised (expect 5)"
 
-# D3 — USDC scheme details
+# D3 — USDC scheme (GoPlausible)
 USDC_ASSET=$(jq -r '.accepts[] | select(.extra.name=="USDC") | .asset' /tmp/verun_x402.json)
 USDC_AMT=$(jq -r '.accepts[] | select(.extra.name=="USDC") | (.maxAmountRequired | tonumber) / 1000000' /tmp/verun_x402.json)
-[ "$USDC_ASSET" = "10458941" ] && ok "USDC scheme: ASA $USDC_ASSET · $USDC_AMT USDC" || bad "USDC scheme wrong (asset=$USDC_ASSET)"
+[ "$USDC_ASSET" = "10458941" ] && ok "USDC · ASA $USDC_ASSET · $USDC_AMT USDC · via GoPlausible" || bad "USDC scheme wrong (asset=$USDC_ASSET)"
 
-# D4 — EURD scheme present (Quantoz)
-EURD=$(jq -r '.accepts[] | select(.extra.name=="EURD") | .extra.provider' /tmp/verun_x402.json)
-[ "$EURD" = "Quantoz" ] && ok "EURD scheme · provider=Quantoz" || bad "EURD scheme missing or wrong provider"
+# D4 — EURD (Quantoz, real ASA 1221682136, 2 decimals)
+EURD_ASSET=$(jq -r '.accepts[] | select(.extra.name=="EURD") | .asset' /tmp/verun_x402.json)
+EURD_DEC=$(jq -r '.accepts[] | select(.extra.name=="EURD") | .extra.decimals' /tmp/verun_x402.json)
+[ "$EURD_ASSET" = "1221682136" ] && ok "EURD · ASA 1221682136 · MiCA-regulated · via Quantoz" || bad "EURD ASA wrong: $EURD_ASSET (want 1221682136)"
+[ "$EURD_DEC" = "2" ] && ok "EURD · correct 2-decimal precision" || bad "EURD decimals wrong: $EURD_DEC (want 2)"
 
-# D5 — EUR (off-chain Quantoz) scheme
-EUR=$(jq -r '.accepts[] | select(.scheme=="euro") | .extra.provider' /tmp/verun_x402.json)
-[ "$EUR" = "Quantoz" ] && ok "EUR (off-chain) · provider=Quantoz" || bad "EUR scheme missing"
+# D5 — EURQ (Quantoz, ASA 2768422954)
+EURQ_ASSET=$(jq -r '.accepts[] | select(.extra.name=="EURQ") | .asset' /tmp/verun_x402.json)
+[ "$EURQ_ASSET" = "2768422954" ] && ok "EURQ · ASA 2768422954 · MiCA-regulated · via Quantoz" || bad "EURQ ASA wrong: $EURQ_ASSET (want 2768422954)"
 
-# D6 — Facilitator URL
-FAC=$(jq -r '.accepts[] | select(.extra.facilitator) | .extra.facilitator' /tmp/verun_x402.json | head -1)
-[ "$FAC" = "$FACILITATOR" ] && ok "facilitator: $FAC" || bad "facilitator URL wrong: $FAC"
+# D6 — EURO off-chain managed-account (Path A)
+EUR_PROV=$(jq -r '.accepts[] | select(.scheme=="euro") | .extra.provider' /tmp/verun_x402.json)
+[ "$EUR_PROV" = "Quantoz" ] && ok "EUR off-chain managed-account (Path A) · Quantoz" || bad "Path A missing"
 
-# D7 — Bonus integrations advertised
-BONUS=$(jq -r '.metadata.bonus_integrations | to_entries | map("\(.key)=\(.value)") | join(", ")' /tmp/verun_x402.json)
-echo "$BONUS" | grep -qi "quantoz" && ok "metadata advertises Quantoz bonus" || bad "Quantoz bonus tag missing"
-echo "$BONUS" | grep -qi "folks_finance" && ok "metadata advertises Folks Finance bonus" || bad "Folks Finance bonus tag missing"
+# D7 — EUR→Algorand bridge (Path C)
+BRIDGE=$(jq -r '.accepts[] | select(.scheme=="exact-bridge") | .extra.path' /tmp/verun_x402.json)
+[ -n "$BRIDGE" ] && [ "$BRIDGE" != "null" ] && ok "EUR→Algorand bridge (Path C) advertised" || bad "Path C bridge missing"
+
+# D8 — Facilitator URLs present
+GOPL=$(jq -r '.accepts[] | select(.extra.name=="USDC") | .extra.facilitator' /tmp/verun_x402.json)
+QFAC=$(jq -r '.accepts[] | select(.extra.name=="EURD") | .facilitator' /tmp/verun_x402.json)
+[ "$GOPL" = "$FACILITATOR" ] && ok "GoPlausible facilitator URL correct" || bad "GoPlausible URL wrong"
+[ "$QFAC" = "https://x402algo.ai.quantozpay.com" ] && ok "Quantoz x402 facilitator URL correct" || bad "Quantoz facilitator URL wrong: $QFAC"
+
+# D9 — Bonus integrations
+QPATHS=$(jq -r '.metadata.bonus_integrations.quantoz.paths | join(", ")' /tmp/verun_x402.json)
+[ -n "$QPATHS" ] && echo "$QPATHS" | grep -qi "Path A" && echo "$QPATHS" | grep -qi "Path B" && echo "$QPATHS" | grep -qi "Path C" \
+  && ok "Quantoz bonus · 3 paths advertised: $QPATHS" || bad "Quantoz paths metadata incomplete"
+FOLKS=$(jq -r '.metadata.bonus_integrations.folks_finance.asa_id // empty' /tmp/verun_x402.json)
+[ "$FOLKS" = "730430089" ] && ok "Folks Finance xALGO bonus · ASA $FOLKS" || bad "Folks Finance metadata incomplete"
 
 # ════════════════════════════════════════════════════════════
 # [E] CONSENSUS — MULTIPLE SCORE TIERS

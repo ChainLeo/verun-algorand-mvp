@@ -98,10 +98,10 @@ fi
 SCHEMES=$(grep -oE "USDC|EURD|EUR" /tmp/verun_index.html | sort -u | wc -l | tr -d ' ')
 if [ "$SCHEMES" -ge 3 ]; then ok "3 payment schemes advertised on landing (USDC + EURD + EUR)"; else bad "payment schemes incomplete"; fi
 
-# B5 — docs.html reachable
-curl -sf "$BASE_URL/docs.html" -o /tmp/verun_docs.html || { bad "docs.html not reachable"; }
+# B5 — docs reachable (vercel cleanUrls redirects /docs.html → /docs)
+curl -sLf "$BASE_URL/docs" -o /tmp/verun_docs.html || { bad "docs not reachable"; }
 DSIZE=$(wc -c </tmp/verun_docs.html 2>/dev/null | tr -d ' ')
-[ -n "$DSIZE" ] && [ "$DSIZE" -gt 1000 ] && ok "docs.html served ($DSIZE bytes)" || bad "docs.html too small or missing"
+[ -n "$DSIZE" ] && [ "$DSIZE" -gt 1000 ] && ok "docs served ($DSIZE bytes)" || bad "docs too small or missing"
 
 # ════════════════════════════════════════════════════════════
 # [C] CORE API ENDPOINTS
@@ -201,8 +201,9 @@ run_eval() {
 
 run_eval "LOW   tier"  820 "transfer" "LOW"
 run_eval "MED   tier"  720 "transfer" "MED"
-run_eval "HIGH  tier"  450 "transfer" "HIGH"
-run_eval "BLOCK tier"  250 "transfer" "BLOCK"
+run_eval "HIGH  tier"  450 "read"     "HIGH"   # transfer needs 500+, read needs only 300+
+run_eval "BLOCK tier"  250 "read"     "BLOCK"  # below read gate (300)
+run_eval "GATE  fail" 450 "transfer" "BLOCK"   # 450 below 500 transfer gate → all validators BLOCK
 
 # E5 — Last call produced an anchor we can save for [F]
 ANCHOR=$(curl -sf -X POST "$BASE_URL/api/evaluate" \
@@ -270,9 +271,12 @@ hdr "H · Subdomain + secondary routes"
 S=$(curl -s -o /dev/null -w "%{http_code}" "$BASE_URL/")
 [ "$S" = "200" ] && ok "GET /                → 200" || bad "GET / → $S"
 
-# H2 — /docs.html → 200
+# H2 — /docs.html → 308 (cleanUrls redirect, then 200 with -L)
 S=$(curl -s -o /dev/null -w "%{http_code}" "$BASE_URL/docs.html")
-[ "$S" = "200" ] && ok "GET /docs.html       → 200" || bad "GET /docs.html → $S"
+[ "$S" = "308" ] && ok "GET /docs.html       → 308 (cleanUrls redirect to /docs)" || bad "GET /docs.html → $S (want 308)"
+
+S=$(curl -sL -o /dev/null -w "%{http_code}" "$BASE_URL/docs.html")
+[ "$S" = "200" ] && ok "GET /docs.html       → 200 after following redirect" || bad "GET /docs.html with -L → $S"
 
 # H3 — /docs (cleanUrls) → 200
 S=$(curl -s -o /dev/null -w "%{http_code}" "$BASE_URL/docs")

@@ -189,7 +189,7 @@ function buildPaymentRequirements({ resource, description, amountUSDC = PRICE_US
       docs: 'https://algorand.erster.fund/docs.html',
       bonus_integrations: {
         quantoz: {
-          paths: ['A · EUR managed-account', 'B · EURD/EURQ on Algorand', 'C · EUR→Algorand bridge'],
+          paths: ['Path A · EUR managed-account', 'Path B · EURD/EURQ on Algorand', 'Path C · EUR→Algorand bridge'],
           facilitators: {
             x402: QUANTOZ_X402_FACILITATOR,
             mcp_pay: QUANTOZ_PAY_FACILITATOR

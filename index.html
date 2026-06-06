@@ -950,29 +950,29 @@ print('  → Click the Lora Explorer link to see the live transaction.')
     </p>
 
     <div style="display:grid;grid-template-columns:1.1fr 0.9fr;gap:32px;max-width:1080px;margin:0 auto;align-items:start" class="x402-grid">
-      <!-- LEFT: code / curl example -->
-      <div style="background:#0a2540;color:#cbd5e1;border-radius:14px;padding:0;overflow:hidden;box-shadow:var(--shadow-lg);font-family:var(--mono)">
-        <div style="background:#1e293b;padding:10px 14px;display:flex;align-items:center;gap:8px;border-bottom:1px solid #334155">
-          <span style="width:10px;height:10px;border-radius:50%;background:#ff5f57"></span>
-          <span style="width:10px;height:10px;border-radius:50%;background:#febc2e"></span>
-          <span style="width:10px;height:10px;border-radius:50%;background:#28c840"></span>
-          <span style="font-size:11px;color:#94a3b8;margin-left:8px">agent · x402 client</span>
-          <span style="margin-left:auto;font-size:10px;color:#7c3aed;font-weight:700;letter-spacing:0.08em">PAYS 0.01 USDC</span>
+      <!-- LEFT: interactive terminal -->
+      <div>
+        <div style="background:#0a2540;color:#cbd5e1;border-radius:14px;padding:0;overflow:hidden;box-shadow:var(--shadow-lg);font-family:var(--mono)">
+          <div style="background:#1e293b;padding:10px 14px;display:flex;align-items:center;gap:8px;border-bottom:1px solid #334155">
+            <span style="width:10px;height:10px;border-radius:50%;background:#ff5f57"></span>
+            <span style="width:10px;height:10px;border-radius:50%;background:#febc2e"></span>
+            <span style="width:10px;height:10px;border-radius:50%;background:#28c840"></span>
+            <span style="font-size:11px;color:#94a3b8;margin-left:8px">agent · x402 live terminal</span>
+            <span id="x402-status" style="margin-left:auto;font-size:10px;color:#7c3aed;font-weight:700;letter-spacing:0.08em">READY</span>
+          </div>
+          <pre id="x402-terminal" style="margin:0;padding:18px 20px;font-size:12px;line-height:1.7;color:#e2e8f0;white-space:pre-wrap;word-break:break-word;min-height:340px;max-height:480px;overflow-y:auto"><span style="color:#94a3b8"># Click "Step 1" below to fire a real HTTP request.
+# Then "Step 2" to run the paid Verun evaluation.
+# All transactions are live on Algorand testnet.</span></pre>
         </div>
-        <pre style="margin:0;padding:18px 20px;font-size:12px;line-height:1.7;color:#e2e8f0;white-space:pre-wrap;word-break:break-word"># 1. agent requests evaluation
-<span style="color:#a78bfa">curl</span> -X POST https://algorand.erster.fund<span style="color:#fbbf24">/api/x402/evaluate</span>
-
-<span style="color:#94a3b8"># → HTTP 402 Payment Required</span>
-<span style="color:#94a3b8"># → paymentRequirements (USDC | EURD | EUR)</span>
-
-# 2. agent signs PaymentTxn + retries
-<span style="color:#a78bfa">curl</span> -X POST https://algorand.erster.fund/api/x402/evaluate \
-  -H <span style="color:#34d399">"X-PAYMENT: $(SIGNED_TXN_BASE64)"</span> \
-  -H <span style="color:#34d399">"Content-Type: application/json"</span> \
-  -d <span style="color:#fbbf24">'{"agentId":"agt_demo","score":820,"operation":"transfer"}'</span>
-
-<span style="color:#94a3b8"># → 200 OK</span>
-<span style="color:#94a3b8"># → verdict + Algorand anchor txid + settlement txid</span></pre>
+        <div style="display:flex;gap:10px;margin-top:14px;flex-wrap:wrap">
+          <button id="btn-x402-step1" onclick="runX402Step1()" class="btn btn-teal" style="padding:11px 20px;font-size:14px;background:#7c3aed;box-shadow:0 4px 14px rgba(124,58,237,0.3)">
+            Step 1 · Trigger HTTP 402 →
+          </button>
+          <button id="btn-x402-step2" onclick="runX402Step2()" class="btn btn-outline" style="padding:11px 20px;font-size:14px" disabled>
+            Step 2 · Run Paid Evaluation →
+          </button>
+          <button onclick="resetX402()" style="background:transparent;border:0;color:var(--text2);font-size:12px;text-decoration:underline;cursor:pointer">reset</button>
+        </div>
       </div>
       <!-- RIGHT: payment options + facts -->
       <div>
@@ -1065,6 +1065,103 @@ print('  → Click the Lora Explorer link to see the live transaction.')
 </footer>
 
 <script>
+// ─── x402 INTERACTIVE DEMO (live calls to /api/x402/* + /api/evaluate) ──
+function _x402WriteLine(text, color = '#e2e8f0') {
+  const term = document.getElementById('x402-terminal');
+  if (!term) return;
+  const line = document.createElement('div');
+  line.style.color = color;
+  line.textContent = text;
+  term.appendChild(line);
+  term.scrollTop = term.scrollHeight;
+}
+function _x402WriteRaw(html) {
+  const term = document.getElementById('x402-terminal');
+  if (!term) return;
+  const div = document.createElement('div');
+  div.innerHTML = html;
+  term.appendChild(div);
+  term.scrollTop = term.scrollHeight;
+}
+function _x402SetStatus(text, color = '#7c3aed') {
+  const s = document.getElementById('x402-status');
+  if (s) { s.textContent = text; s.style.color = color; }
+}
+function resetX402() {
+  const term = document.getElementById('x402-terminal');
+  if (term) term.innerHTML = '<span style="color:#94a3b8"># Click "Step 1" below to fire a real HTTP request.\n# Then "Step 2" to run the paid Verun evaluation.\n# All transactions are live on Algorand testnet.</span>';
+  _x402SetStatus('READY', '#7c3aed');
+  document.getElementById('btn-x402-step1').disabled = false;
+  document.getElementById('btn-x402-step2').disabled = true;
+}
+async function runX402Step1() {
+  document.getElementById('btn-x402-step1').disabled = true;
+  const term = document.getElementById('x402-terminal');
+  if (term) term.innerHTML = '';
+  _x402SetStatus('REQUESTING…', '#fbbf24');
+  _x402WriteLine('$ curl -i https://algorand.erster.fund/api/x402/evaluate', '#a78bfa');
+  _x402WriteLine('');
+  try {
+    const res = await fetch('/api/x402/evaluate', { method: 'POST', headers: { 'Content-Type': 'application/json' } });
+    const body = await res.json();
+    _x402WriteLine(`HTTP/${res.status === 402 ? '1.1 402 Payment Required' : res.status}`, res.status === 402 ? '#fbbf24' : '#34d399');
+    const facHdr = res.headers.get('x-402-powered');
+    if (facHdr) _x402WriteLine('X-402-Powered: ' + facHdr, '#94a3b8');
+    _x402WriteLine('');
+    _x402WriteLine('// paymentRequirements (3 schemes accepted)', '#94a3b8');
+    body.accepts.forEach((a, i) => {
+      const asset = a.extra?.name || a.asset;
+      const amt = (Number(a.maxAmountRequired) / 1e6).toFixed(2);
+      _x402WriteRaw(`<span style="color:#fbbf24">  scheme ${i + 1}:</span> <span style="color:#34d399">${a.scheme}</span> · <span style="color:#a78bfa">${a.network.split(':')[0]}</span> · <span style="color:#e2e8f0;font-weight:700">${amt} ${asset}</span> <span style="color:#94a3b8">→ ${a.extra?.facilitator || a.extra?.provider || '—'}</span>`);
+    });
+    _x402WriteLine('');
+    _x402WriteLine('# Next: agent signs PaymentTxn + retries with X-PAYMENT header', '#94a3b8');
+    _x402SetStatus('402 RECEIVED', '#fbbf24');
+    document.getElementById('btn-x402-step2').disabled = false;
+  } catch (e) {
+    _x402WriteLine('ERROR: ' + e.message, '#f87171');
+    _x402SetStatus('ERROR', '#f87171');
+    document.getElementById('btn-x402-step1').disabled = false;
+  }
+}
+async function runX402Step2() {
+  document.getElementById('btn-x402-step2').disabled = true;
+  _x402WriteLine('');
+  _x402WriteLine('$ curl -X POST /api/evaluate  # paid call → run consensus + anchor', '#a78bfa');
+  _x402WriteLine('# (in production: -H "X-PAYMENT: $SIGNED_TXN_BASE64")', '#94a3b8');
+  _x402WriteLine('');
+  _x402SetStatus('EVALUATING…', '#fbbf24');
+  try {
+    const payload = { agentId: 'agt_demo', score: 820, operation: 'transfer', validatorIds: ['val-erster-01', 'val-tokenforge-02', 'val-test-03'] };
+    const res = await fetch('/api/evaluate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+    const data = await res.json();
+    const verdict = data.verdict || {};
+    const anchor = data.anchor || {};
+    _x402WriteLine('HTTP/1.1 200 OK', '#34d399');
+    _x402WriteLine('');
+    _x402WriteRaw(`<span style="color:#94a3b8">// verdict</span>`);
+    _x402WriteRaw(`  consensus  : <span style="color:#34d399;font-weight:700">${verdict.consensus || 'n/a'}</span>`);
+    _x402WriteRaw(`  permitted  : <span style="color:#34d399;font-weight:700">${String(verdict.permitted)}</span>`);
+    _x402WriteRaw(`  validators : <span style="color:#a78bfa">${(verdict.validators_used || []).map(v => v.name).join(' · ')}</span>`);
+    _x402WriteRaw(`  kickback   : <span style="color:#fbbf24">${verdict.kickback_rate}%</span>`);
+    _x402WriteLine('');
+    _x402WriteRaw(`<span style="color:#94a3b8">// anchor (Algorand Testnet)</span>`);
+    if (anchor.txid) {
+      _x402WriteRaw(`  txid      : <span style="color:#34d399">${anchor.txid}</span>`);
+      _x402WriteRaw(`  round     : <span style="color:#a78bfa">${anchor.round || ''}</span>`);
+      _x402WriteRaw(`  explorer  : <a href="${anchor.explorer}" target="_blank" style="color:#60a5fa;text-decoration:underline">${anchor.explorer}</a>`);
+      _x402SetStatus('200 · ANCHORED', '#34d399');
+    } else {
+      _x402WriteRaw(`  status    : <span style="color:#fbbf24">${anchor.status || 'unavailable'}</span>`);
+      if (anchor.error) _x402WriteRaw(`  error     : <span style="color:#f87171">${anchor.error}</span>`);
+      _x402SetStatus('200 · NO ANCHOR', '#fbbf24');
+    }
+  } catch (e) {
+    _x402WriteLine('ERROR: ' + e.message, '#f87171');
+    _x402SetStatus('ERROR', '#f87171');
+  }
+}
+
 // ─── STATE ──────────────────────────────────────────────
 let currentMode = 'supervised';
 let currentStep = 1;

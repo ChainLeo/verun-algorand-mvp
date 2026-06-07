@@ -556,6 +556,19 @@ footer .footer-inner > div:first-child > div:last-child{color:#64748b !important
 .er-pill-status.waiting{background:#f1f5f9;color:var(--text3)}
 .er-pill-status.rejected{background:#fee2e2;color:#dc2626}
 
+/* TEAM SECTION */
+.team-section .team-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;max-width:1100px;margin:0 auto}
+.team-card:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(15,23,42,0.06)}
+@media(max-width:1024px){
+  .team-section{padding:70px 0 !important}
+  .team-section .team-grid{grid-template-columns:repeat(2,1fr) !important;max-width:680px;gap:16px}
+}
+@media(max-width:560px){
+  .team-section{padding:56px 0 !important}
+  .team-section .team-grid{grid-template-columns:1fr !important;max-width:420px;gap:14px}
+  .team-card{padding:22px 20px !important}
+}
+
 /* TABLET — stack copy + browser, dashboard fills container width (same edges as rest of website) */
 @media(max-width:1024px){
   .erster-section{padding:80px 0 60px}
